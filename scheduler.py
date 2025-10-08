@@ -7,8 +7,8 @@ from utils import send_line_message, log_message, log_error
 from config import get_line_client, BOT_CONFIGS, DATABASE_URL
 
 def send_weekly_reminder():
-    """1週間ごとのリマインダーを送信する関数（全企業対応）"""
-    print("Weekly reminder check started at:", datetime.utcnow())
+    """ユーザーごとに個別のリマインダーを送信する関数（定期チェック）"""
+    print("Reminder check started at:", datetime.utcnow())
     
     # 各企業ごとに処理
     for bot_id, config in BOT_CONFIGS.items():
@@ -39,14 +39,17 @@ def send_company_reminders(bot_id):
                 print(f"Company not found for bot_id: {bot_id}")
                 return
             
-            # 1週間前の日時を計算
-            one_week_ago = datetime.utcnow() - timedelta(days=7)
+            # 現在時刻から7日前を計算
+            now = datetime.utcnow()
+            seven_days_ago = now - timedelta(days=7)
             
-            # この企業に属するユーザーで1週間前にプログラムを送信したユーザーを抽出
+            # この企業に属するユーザーで、最後の回答から7日以上経過したユーザーを抽出
+            # question_sent=Falseで重複送信を防ぐ（ユーザーが回答するとFalseにリセットされる）
             users = session.query(User).filter(
                 User.company_id == company.id,
                 User.program_sent_date != None,
-                User.program_sent_date <= one_week_ago
+                User.program_sent_date <= seven_days_ago,
+                User.question_sent == False  # まだ質問を送っていない
             ).all()
             
             print(f"Found {len(users)} users for company {company.name} to send weekly reminder")
@@ -94,13 +97,14 @@ def start_scheduler():
     print("Starting scheduler...")
     scheduler = BackgroundScheduler()
     
-    # 1週間ごとに実行
+    # 6時間ごとに実行（1日4回チェック）
+    # これにより、各ユーザーの回答時刻から正確に7日後にメッセージを送信
     scheduler.add_job(
         send_weekly_reminder, 
         'interval', 
-        weeks=1,
-        id='weekly_reminder'
+        hours=6,
+        id='individual_reminder'
     )
     
     scheduler.start()
-    print("Weekly scheduler started successfully")
+    print("Individual reminder scheduler started (checks every 6 hours)")
