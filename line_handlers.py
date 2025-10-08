@@ -191,12 +191,13 @@ def process_foot_check_result(event, text, user, company, api, session, bot_id):
     
     user.foot_check_result = normalized_result
     user.last_program_type = "initial"
+    user.current_week = 0  # 初回登録は0週目
     user.question_sent = False
     user.program_sent_date = datetime.utcnow()  # 日付を更新
     session.commit()
 
     log_message(session, user, "received", f"足健診結果: {normalized_result}")
-    log_message(session, user, "system", f"足健診結果を{normalized_result}に更新")
+    log_message(session, user, "system", f"足健診結果を{normalized_result}に更新、0週目に設定")
 
     # A/B/C/D共通のメッセージ（初回登録時は動画を送らない）
     message = f"{display_name}さん、足健診結果の入力ありがとうございます！1週間後に新しい運動メニューを配信しますので、今日教わった内容を継続しましょう！"
@@ -210,7 +211,7 @@ def process_foot_check_result(event, text, user, company, api, session, bot_id):
 
 def process_exercise_days(event, text, user, company, api, session, bot_id):
     """運動日数の処理（クイックリプライからの回答）"""
-    from config import EXERCISE_VIDEO_URLS, EXERCISE_THUMBNAIL_URLS
+    from config import EXERCISE_VIDEO_URLS_AB, EXERCISE_VIDEO_URLS_CD, EXERCISE_THUMBNAIL_URLS_AB, EXERCISE_THUMBNAIL_URLS_CD
     from utils import create_exercise_video_flex_message
     
     # プロフィール情報を直接取得
@@ -257,19 +258,33 @@ def process_exercise_days(event, text, user, company, api, session, bot_id):
         log_message(session, user, "error", f"想定外の運動回数: {text}")
         return
     
+    # 週番号の取得と更新
+    current_week = user.current_week if user.current_week else 0
+    
+    # 0週目（初回）なら1週目に進める
+    if current_week == 0:
+        current_week = 1
+    
     # データベースを更新
     user.last_response_days = days
     user.question_sent = False  # 質問に回答したのでフラグをリセット
     user.program_sent_date = datetime.utcnow()  # 日付を更新
     user.last_program_type = "continued"
-    session.commit()
-
+    
     log_message(session, user, "received", f"運動回数: {text}")
-    log_message(session, user, "system", f"運動日数を{days}に更新")
+    log_message(session, user, "system", f"運動日数を{days}に更新、{current_week}週目の動画を送信")
 
-    # 評価結果に応じた動画とサムネイルURLを取得
-    video_url = EXERCISE_VIDEO_URLS.get(user.foot_check_result)
-    thumbnail_url = EXERCISE_THUMBNAIL_URLS.get(user.foot_check_result)
+    # 評価結果に応じて動画セットを選択（A/BとC/Dは同じ動画）
+    if user.foot_check_result in ['A', 'B']:
+        video_urls = EXERCISE_VIDEO_URLS_AB
+        thumbnail_urls = EXERCISE_THUMBNAIL_URLS_AB
+    else:  # C または D
+        video_urls = EXERCISE_VIDEO_URLS_CD
+        thumbnail_urls = EXERCISE_THUMBNAIL_URLS_CD
+    
+    # 週番号に応じた動画を取得（インデックスは0始まりなのでcurrent_week - 1）
+    video_url = video_urls[current_week - 1]
+    thumbnail_url = thumbnail_urls[current_week - 1]
     
     # Flex Messageを生成
     flex_message = create_exercise_video_flex_message(video_url, thumbnail_url)
@@ -281,7 +296,13 @@ def process_exercise_days(event, text, user, company, api, session, bot_id):
         user, session, bot_id
     )
     if success:
-        log_message(session, user, "sent", f"運動メニュー動画送信（{text}）")
+        log_message(session, user, "sent", f"運動メニュー動画送信（{current_week}週目、{text}）")
+        
+        # 次回の週番号を更新（12週目の次は1週目に戻る）
+        next_week = (current_week % 12) + 1
+        user.current_week = next_week
+        session.commit()
+        print(f"週番号を{current_week}から{next_week}に更新しました")
 
 def process_other_message(event, text, user, company, api, session, bot_id):
     """その他のメッセージ処理"""
