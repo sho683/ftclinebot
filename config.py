@@ -20,7 +20,7 @@ if os.getenv("COMPANY2_CHANNEL_SECRET") and os.getenv("COMPANY2_ACCESS_TOKEN"):
     BOT_CONFIGS["company2"] = {
         "channel_secret": os.getenv("COMPANY2_CHANNEL_SECRET"),
         "access_token": os.getenv("COMPANY2_ACCESS_TOKEN"),
-        "name": os.getenv("COMPANY2_NAME", "Company 2")
+        "name": os.getenv("COMPANY2_NAME", "楢葉町足健診")
     }
     print(f"company2 の設定を読み込みました: {BOT_CONFIGS['company2']['name']}")
 
