@@ -1,0 +1,7 @@
+flask>=3.0
+line-bot-sdk==3.*
+sqlalchemy
+psycopg2-binary
+apscheduler
+python-dotenv
+gunicorn
