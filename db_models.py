@@ -27,6 +27,7 @@ class User(Base):
     program_sent_date = Column(DateTime)
     last_program_type = Column(String)  # "initial" or "continued"
     last_response_days = Column(Integer)
+    current_week = Column(Integer, default=0)  # 現在の週番号（0=初回、1-12=動画週）
     question_sent = Column(Boolean, default=False)  # 質問送信状態を管理
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
