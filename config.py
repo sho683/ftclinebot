@@ -1,4 +1,3 @@
-# config.py
 import os
 import json
 from linebot.v3.messaging import Configuration, ApiClient, MessagingApi
@@ -11,7 +10,7 @@ if os.getenv("COMPANY1_CHANNEL_SECRET") and os.getenv("COMPANY1_ACCESS_TOKEN"):
     BOT_CONFIGS["company1"] = {
         "channel_secret": os.getenv("COMPANY1_CHANNEL_SECRET"),
         "access_token": os.getenv("COMPANY1_ACCESS_TOKEN"),
-        "name": os.getenv("COMPANY1_NAME", "池田市足健診")
+        "name": os.getenv("COMPANY1_NAME", "Company 1")
     }
     print(f"company1 の設定を読み込みました: {BOT_CONFIGS['company1']['name']}")
 
@@ -20,9 +19,18 @@ if os.getenv("COMPANY2_CHANNEL_SECRET") and os.getenv("COMPANY2_ACCESS_TOKEN"):
     BOT_CONFIGS["company2"] = {
         "channel_secret": os.getenv("COMPANY2_CHANNEL_SECRET"),
         "access_token": os.getenv("COMPANY2_ACCESS_TOKEN"),
-        "name": os.getenv("COMPANY2_NAME", "楢葉町足健診")
+        "name": os.getenv("COMPANY2_NAME", "Company 2")
     }
     print(f"company2 の設定を読み込みました: {BOT_CONFIGS['company2']['name']}")
+
+# company3 があれば追加
+if os.getenv("COMPANY3_CHANNEL_SECRET") and os.getenv("COMPANY3_ACCESS_TOKEN"):
+    BOT_CONFIGS["company3"] = {
+        "channel_secret": os.getenv("COMPANY3_CHANNEL_SECRET"),
+        "access_token": os.getenv("COMPANY3_ACCESS_TOKEN"),
+        "name": os.getenv("COMPANY3_NAME", "Company 3")
+    }
+    print(f"company3 の設定を読み込みました: {BOT_CONFIGS['company3']['name']}")
 
 # JSONで設定されたBOT_CONFIGSがあれば、それも読み込む (バックアップ方法)
 if os.getenv("BOT_CONFIGS"):
