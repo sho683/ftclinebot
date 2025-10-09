@@ -66,6 +66,98 @@ def legacy_callback():
     
     return callback(DEFAULT_BOT_ID)
 
+# テスト用エンドポイント：スケジューラーを手動実行（通常の7日条件）
+@app.route("/test/scheduler", methods=['GET'])
+def test_scheduler():
+    """スケジューラーのリマインダー処理を手動実行（テスト用）"""
+    from scheduler import send_weekly_reminder
+    from flask import jsonify
+    
+    try:
+        print("手動でスケジューラーを実行します...")
+        send_weekly_reminder()
+        return jsonify({
+            "status": "success",
+            "message": "スケジューラーを手動実行しました"
+        })
+    except Exception as e:
+        print(f"スケジューラー実行エラー: {e}")
+        return jsonify({
+            "status": "error",
+            "message": str(e)
+        }), 500
+
+# テスト用エンドポイント：条件なしで全ユーザーに送信
+@app.route("/test/send-now", methods=['GET'])
+def test_send_now():
+    """条件なしで全ユーザーにリマインダーを送信（テスト専用）"""
+    from flask import jsonify
+    from db_models import get_db_session, User, Company
+    from config import get_line_client
+    from linebot.v3.messaging import TextMessage, QuickReply, QuickReplyItem, MessageAction
+    from utils import send_line_message
+    
+    try:
+        results = []
+        
+        for bot_id in BOT_CONFIGS:
+            api = get_line_client(bot_id)
+            
+            with get_db_session(DATABASE_URL) as session:
+                company = session.query(Company).filter_by(bot_id=bot_id).first()
+                if not company:
+                    continue
+                
+                # 条件なし：この企業の全ユーザーに送信
+                users = session.query(User).filter(
+                    User.company_id == company.id,
+                    User.program_sent_date != None,
+                    User.question_sent == False
+                ).all()
+                
+                for user in users:
+                    quick_reply = QuickReply(
+                        items=[
+                            QuickReplyItem(action=MessageAction(label="0回", text="0回")),
+                            QuickReplyItem(action=MessageAction(label="1~3回", text="1~3回")),
+                            QuickReplyItem(action=MessageAction(label="4~7回", text="4~7回"))
+                        ]
+                    )
+                    
+                    message_text = f"{user.username}さん、{company.name}の足健康プログラムからお知らせです。この1週間で運動は何回できましたか？0〜7回でご回答ください。"
+                    message = TextMessage(text=message_text, quick_reply=quick_reply)
+                    
+                    success = send_line_message(api, "push", user.line_user_id, [message], user, session, bot_id)
+                    
+                    if success:
+                        user.question_sent = True
+                        session.commit()
+                        results.append(f"送信成功: {user.line_user_id}")
+                    else:
+                        results.append(f"送信失敗: {user.line_user_id}")
+        
+        return jsonify({
+            "status": "success",
+            "message": "テスト送信完了",
+            "results": results
+        })
+    
+    except Exception as e:
+        return jsonify({
+            "status": "error",
+            "message": str(e)
+        }), 500
+
+# ヘルスチェック用エンドポイント
+@app.route("/health", methods=['GET'])
+def health_check():
+    """ヘルスチェック"""
+    from flask import jsonify
+    return jsonify({
+        "status": "ok",
+        "companies": len(BOT_CONFIGS)
+    })
+
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
     app.run(host='0.0.0.0', port=port)
