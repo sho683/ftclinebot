@@ -3,6 +3,41 @@
 足の健康状態を判定し、適切な運動プログラムを週次で提供するLINE Botアプリケーション。
 複数の企業・団体を同時にサポートするマルチテナント対応です。
 
+---
+
+## 🔄 最近の主要な更新（2025年10月）
+
+### ✅ 12週間動画プログラム機能
+- A/B評価用・C/D評価用それぞれ12本の動画を順番に配信
+- 12週目の次は自動的に1週目に戻る（無限ループ）
+- ユーザーごとに個別の週番号を管理
+
+### ✅ 運動履歴の保存機能
+- 新テーブル `exercise_history` を追加
+- ユーザーの回答履歴を経時的に保存
+- 統計分析・継続率の計算が可能
+
+### ✅ 管理用API追加
+- `/admin/history/all`: 全履歴表示
+- `/admin/users/<bot_id>`: 全ユーザー一覧と統計
+- `/history/<bot_id>`: 企業統計
+- 読み取り専用で安全に使用可能
+
+### ✅ クイックリプライ対応
+- 運動回数の入力を選択式に変更（0回/1~3回/4~7回）
+- ユーザーの操作が簡単に
+
+### ✅ 個別スケジュール管理
+- ユーザーごとに回答日から正確に7日後に送信
+- 6時間ごとのチェックで日時のズレを防止
+
+### ⚠️ 削除された機能
+- D評価の医療機関受診推奨メッセージ（全評価共通に統一）
+- デバッグ用スクリプト（`check_logs.py`, `check_users.py`）
+- 未使用コード（`line_api.py`, `FootTip`テーブル）
+
+---
+
 ## 主な機能
 
 - 足の健康状態チェック (A/B/C/D評価)
@@ -10,6 +45,8 @@
 - **12週間の動画プログラム**（A/B用・C/D用それぞれ12本、自動ループ）
 - ユーザーごとの個別スケジュール管理
 - 週次クイックリプライによる運動継続確認
+- **運動履歴の自動保存**（経時的データの蓄積）
+- 管理用ダッシュボードAPI（履歴確認、統計情報）
 - 複数企業の同時運用サポート
 
 ## 技術スタック
@@ -239,6 +276,238 @@ SELECT COUNT(*) FROM users;
 
 `current_week`カラムは起動時に自動追加されます。
 既存ユーザーには`default=0`が設定されます。
+
+---
+
+## データベース構造
+
+### テーブル一覧
+
+#### `companies`
+企業情報を管理
+
+#### `users`
+ユーザー情報と現在の週番号を管理
+
+#### `exercise_history` ⭐NEW
+運動履歴を経時的に保存
+- `user_id`: ユーザーID
+- `response_date`: 回答日時
+- `response_days`: 運動回数（0, 2, 5）
+- `response_text`: 回答テキスト（"0回", "1~3回", "4~7回"）
+- `week_number`: 送信した動画の週番号（1〜12）
+- `foot_check_result`: 評価結果（A/B/C/D）
+- `company_id`: 企業ID
+
+ユーザーが回答するたびに自動的に履歴が保存されます。
+
+#### `message_logs`
+メッセージログ
+
+---
+
+## APIエンドポイント一覧
+
+### ⚠️ 本番環境での注意事項
+
+**以下のエンドポイントは実際にLINEメッセージを送信します！**
+本番運用中は慎重に使用してください。
+
+### 📱 メッセージ送信エンドポイント（要注意）
+
+#### `/test/send-now` ⚠️ 危険
+```bash
+curl https://ftclinebot.onrender.com/test/send-now
+```
+- **即座に全ユーザーにメッセージを送信**
+- テスト専用、本番では使用しないこと
+- 誤送信に注意！
+
+#### `/test/scheduler`
+```bash
+curl https://ftclinebot.onrender.com/test/scheduler
+```
+- 7日条件付きでメッセージ送信
+- 該当するユーザーのみに送信
+- 本番でも使用可能だが注意
+
+---
+
+### 📊 管理用エンドポイント（安全）
+
+これらのエンドポイントは**読み取り専用**で、メッセージを送信しません。
+
+#### `/health`
+```bash
+curl https://ftclinebot.onrender.com/health
+```
+ヘルスチェック
+
+**レスポンス:**
+```json
+{
+  "status": "ok",
+  "companies": 1
+}
+```
+
+#### `/history/<bot_id>`
+```bash
+curl https://ftclinebot.onrender.com/history/company3
+```
+企業全体の統計情報
+
+**レスポンス:**
+```json
+{
+  "company": "企業B",
+  "total_users": 10,
+  "total_responses": 45,
+  "average_exercise_days": 3.2
+}
+```
+
+#### `/history/<bot_id>?user_id=xxx`
+```bash
+curl "https://ftclinebot.onrender.com/history/company3?user_id=Uc8760f3a5b94ac1b7b931d2036da13f0"
+```
+特定ユーザーの運動履歴
+
+**レスポンス:**
+```json
+{
+  "user_id": "Uc8760f3a5b94ac1b7b931d2036da13f0",
+  "username": "田中太郎",
+  "foot_check_result": "A",
+  "current_week": 3,
+  "history": [
+    {
+      "date": "2025-10-11T10:30:00",
+      "response_text": "1~3回",
+      "response_days": 2,
+      "week_number": 2
+    }
+  ]
+}
+```
+
+#### `/admin/history/all` ⭐NEW
+```bash
+# デフォルト（最新100件）
+curl https://ftclinebot.onrender.com/admin/history/all
+
+# 件数を指定
+curl https://ftclinebot.onrender.com/admin/history/all?limit=50
+```
+全ての運動履歴を取得（管理用）
+
+**レスポンス:**
+```json
+{
+  "total": 15,
+  "limit": 100,
+  "histories": [
+    {
+      "id": 15,
+      "username": "田中太郎",
+      "user_id": "Uc8760f3a5b94ac1b7b931d2036da13f0",
+      "date": "2025-10-11T10:30:00",
+      "response_text": "1~3回",
+      "response_days": 2,
+      "week_number": 2,
+      "foot_check_result": "A"
+    }
+  ]
+}
+```
+
+#### `/admin/users/<bot_id>` ⭐NEW
+```bash
+curl https://ftclinebot.onrender.com/admin/users/company3
+```
+全ユーザー一覧と統計情報
+
+**レスポンス:**
+```json
+{
+  "company": "企業B",
+  "total_users": 5,
+  "users": [
+    {
+      "user_id": "Uc8760f3a5b94ac1b7b931d2036da13f0",
+      "username": "田中太郎",
+      "foot_check_result": "A",
+      "current_week": 3,
+      "created_at": "2025-10-01T09:00:00",
+      "total_responses": 5,
+      "average_exercise_days": 3.4
+    }
+  ]
+}
+```
+
+---
+
+### 💡 エンドポイント使い分け
+
+| 用途 | エンドポイント | 安全性 |
+|-----|-------------|--------|
+| ヘルスチェック | `/health` | ✅ 安全 |
+| 企業統計 | `/history/<bot_id>` | ✅ 安全 |
+| ユーザー履歴 | `/history/<bot_id>?user_id=xxx` | ✅ 安全 |
+| 全履歴表示 | `/admin/history/all` | ✅ 安全 |
+| 全ユーザー一覧 | `/admin/users/<bot_id>` | ✅ 安全 |
+| テスト送信（条件なし） | `/test/send-now` | ⚠️ 危険（メッセージ送信） |
+| テスト送信（7日条件） | `/test/scheduler` | ⚠️ 注意（メッセージ送信） |
+
+---
+
+### 🚨 本番運用前のチェックリスト
+
+本番運用を開始する前に以下を確認してください：
+
+- [ ] テスト用のユーザーアカウントで動作確認済み
+- [ ] YouTube動画URLを全て設定済み（24本）
+- [ ] Webhook URLが正しく設定されている（`/callback/company3`）
+- [ ] データベースのバックアップ設定
+- [ ] **`/test/send-now` を絶対に実行しない**（本番ユーザーに誤送信される）
+- [ ] 環境変数が本番用に設定されている
+
+### 🔒 本番運用中の注意点
+
+- ⚠️ `/test/send-now` は**開発時のみ使用**、本番では絶対に実行しない
+- ⚠️ `/test/scheduler` は緊急時のみ使用（通常は自動実行される）
+- ✅ 管理用エンドポイント（`/admin/*`, `/history/*`, `/health`）は安全に使用可能
+
+---
+
+## 運動履歴データの活用
+
+### SQLで直接確認
+
+```sql
+-- 全履歴
+SELECT * FROM exercise_history ORDER BY response_date DESC;
+
+-- ユーザーごとの統計
+SELECT 
+    u.username,
+    COUNT(*) as total_responses,
+    AVG(eh.response_days) as avg_days,
+    MAX(eh.week_number) as max_week
+FROM exercise_history eh
+JOIN users u ON eh.user_id = u.id
+GROUP BY u.id, u.username;
+
+-- 週ごとの継続率
+SELECT 
+    week_number,
+    COUNT(*) as responses,
+    AVG(response_days) as avg_exercise_days
+FROM exercise_history
+GROUP BY week_number
+ORDER BY week_number;
+```
 
 ---
 
