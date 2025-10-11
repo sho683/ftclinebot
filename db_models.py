@@ -49,6 +49,20 @@ class MessageLog(Base):
 
     user = relationship("User", back_populates="messages")
 
+class ExerciseHistory(Base):
+    __tablename__ = 'exercise_history'
+
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey('users.id'))
+    response_date = Column(DateTime, default=datetime.utcnow)
+    response_days = Column(Integer)  # 0, 2, 5 (運動回数の代表値)
+    response_text = Column(String)  # "0回", "1~3回", "4~7回"
+    week_number = Column(Integer)  # 1〜12 (送信した動画の週番号)
+    foot_check_result = Column(String(1))  # A/B/C/D
+    company_id = Column(Integer, ForeignKey('companies.id'))
+    
+    user = relationship("User")
+
 # PostgreSQL接続用エンジン作成関数
 def get_engine(database_url):
     return create_engine(
