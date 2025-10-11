@@ -298,11 +298,24 @@ def process_exercise_days(event, text, user, company, api, session, bot_id):
     if success:
         log_message(session, user, "sent", f"運動メニュー動画送信（{current_week}週目、{text}）")
         
+        # 運動履歴を保存
+        from db_models import ExerciseHistory
+        history = ExerciseHistory(
+            user_id=user.id,
+            response_days=days,
+            response_text=text,
+            week_number=current_week,
+            foot_check_result=user.foot_check_result,
+            company_id=user.company_id
+        )
+        session.add(history)
+        
         # 次回の週番号を更新（12週目の次は1週目に戻る）
         next_week = (current_week % 12) + 1
         user.current_week = next_week
         session.commit()
         print(f"週番号を{current_week}から{next_week}に更新しました")
+        print(f"運動履歴を保存しました: {days}回（{text}）")
 
 def process_other_message(event, text, user, company, api, session, bot_id):
     """その他のメッセージ処理"""
