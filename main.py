@@ -158,6 +158,81 @@ def health_check():
         "companies": len(BOT_CONFIGS)
     })
 
+# 運動履歴確認用エンドポイント
+@app.route("/history/<bot_id>", methods=['GET'])
+def get_exercise_history(bot_id):
+    """企業の運動履歴を取得"""
+    from flask import jsonify, request
+    from db_models import get_db_session, User, Company, ExerciseHistory
+    from sqlalchemy import func
+    
+    if bot_id not in BOT_CONFIGS:
+        return jsonify({"error": "Invalid bot_id"}), 404
+    
+    try:
+        with get_db_session(DATABASE_URL) as session:
+            company = session.query(Company).filter_by(bot_id=bot_id).first()
+            if not company:
+                return jsonify({"error": "Company not found"}), 404
+            
+            # クエリパラメータで特定ユーザーの履歴を取得
+            user_id = request.args.get('user_id')
+            
+            if user_id:
+                # 特定ユーザーの履歴
+                user = session.query(User).filter_by(
+                    line_user_id=user_id,
+                    company_id=company.id
+                ).first()
+                
+                if not user:
+                    return jsonify({"error": "User not found"}), 404
+                
+                histories = session.query(ExerciseHistory).filter_by(
+                    user_id=user.id
+                ).order_by(ExerciseHistory.response_date.desc()).all()
+                
+                result = {
+                    "user_id": user.line_user_id,
+                    "username": user.username,
+                    "foot_check_result": user.foot_check_result,
+                    "current_week": user.current_week,
+                    "history": [
+                        {
+                            "date": h.response_date.isoformat(),
+                            "response_text": h.response_text,
+                            "response_days": h.response_days,
+                            "week_number": h.week_number
+                        }
+                        for h in histories
+                    ]
+                }
+            else:
+                # 企業全体の統計
+                total_users = session.query(func.count(User.id)).filter_by(
+                    company_id=company.id
+                ).scalar()
+                
+                total_responses = session.query(func.count(ExerciseHistory.id)).filter_by(
+                    company_id=company.id
+                ).scalar()
+                
+                avg_response_days = session.query(func.avg(ExerciseHistory.response_days)).filter_by(
+                    company_id=company.id
+                ).scalar()
+                
+                result = {
+                    "company": company.name,
+                    "total_users": total_users,
+                    "total_responses": total_responses,
+                    "average_exercise_days": float(avg_response_days) if avg_response_days else 0
+                }
+            
+            return jsonify(result)
+    
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
     app.run(host='0.0.0.0', port=port)
