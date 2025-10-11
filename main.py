@@ -233,6 +233,102 @@ def get_exercise_history(bot_id):
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+# 管理用エンドポイント：全履歴表示
+@app.route("/admin/history/all", methods=['GET'])
+def get_all_history():
+    """全ての運動履歴を取得（管理用）"""
+    from flask import jsonify, request
+    from db_models import get_db_session, User, ExerciseHistory
+    
+    try:
+        # クエリパラメータで制限数を指定可能
+        limit = request.args.get('limit', 100, type=int)
+        
+        with get_db_session(DATABASE_URL) as session:
+            # JOINしてユーザー名も取得
+            results = session.query(
+                ExerciseHistory,
+                User.username,
+                User.line_user_id,
+                User.foot_check_result
+            ).join(User).order_by(
+                ExerciseHistory.response_date.desc()
+            ).limit(limit).all()
+            
+            histories = [
+                {
+                    "id": h.id,
+                    "username": username,
+                    "user_id": line_user_id,
+                    "date": h.response_date.isoformat(),
+                    "response_text": h.response_text,
+                    "response_days": h.response_days,
+                    "week_number": h.week_number,
+                    "foot_check_result": foot_check_result
+                }
+                for h, username, line_user_id, foot_check_result in results
+            ]
+            
+            return jsonify({
+                "total": len(histories),
+                "limit": limit,
+                "histories": histories
+            })
+    
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+# 管理用エンドポイント：全ユーザー一覧
+@app.route("/admin/users/<bot_id>", methods=['GET'])
+def get_all_users(bot_id):
+    """企業の全ユーザー一覧を取得（管理用）"""
+    from flask import jsonify
+    from db_models import get_db_session, User, Company
+    from sqlalchemy import func
+    
+    if bot_id not in BOT_CONFIGS:
+        return jsonify({"error": "Invalid bot_id"}), 404
+    
+    try:
+        with get_db_session(DATABASE_URL) as session:
+            company = session.query(Company).filter_by(bot_id=bot_id).first()
+            if not company:
+                return jsonify({"error": "Company not found"}), 404
+            
+            # ユーザー一覧と各ユーザーの統計を取得
+            users = session.query(User).filter_by(company_id=company.id).all()
+            
+            user_list = []
+            for user in users:
+                # 各ユーザーの履歴件数を取得
+                from db_models import ExerciseHistory
+                history_count = session.query(func.count(ExerciseHistory.id)).filter_by(
+                    user_id=user.id
+                ).scalar()
+                
+                avg_days = session.query(func.avg(ExerciseHistory.response_days)).filter_by(
+                    user_id=user.id
+                ).scalar()
+                
+                user_list.append({
+                    "user_id": user.line_user_id,
+                    "username": user.username,
+                    "foot_check_result": user.foot_check_result,
+                    "current_week": user.current_week,
+                    "created_at": user.created_at.isoformat() if user.created_at else None,
+                    "total_responses": history_count,
+                    "average_exercise_days": float(avg_days) if avg_days else 0
+                })
+            
+            return jsonify({
+                "company": company.name,
+                "total_users": len(user_list),
+                "users": user_list
+            })
+    
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
     app.run(host='0.0.0.0', port=port)
