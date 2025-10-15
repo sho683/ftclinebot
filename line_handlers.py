@@ -211,7 +211,9 @@ def process_foot_check_result(event, text, user, company, api, session, bot_id):
 
 def process_exercise_days(event, text, user, company, api, session, bot_id):
     """運動日数の処理（クイックリプライからの回答）"""
-    from config import EXERCISE_VIDEO_URLS_AB, EXERCISE_VIDEO_URLS_CD, EXERCISE_THUMBNAIL_URLS_AB, EXERCISE_THUMBNAIL_URLS_CD
+    from config import (EXERCISE_VIDEO_URLS_AB, EXERCISE_VIDEO_URLS_CD, 
+                        EXERCISE_THUMBNAIL_URLS_AB, EXERCISE_THUMBNAIL_URLS_CD,
+                        EXERCISE_IMAGE_URLS_AB, EXERCISE_IMAGE_URLS_CD)
     from utils import create_exercise_video_flex_message
     
     # プロフィール情報を直接取得
@@ -278,21 +280,28 @@ def process_exercise_days(event, text, user, company, api, session, bot_id):
     if user.foot_check_result in ['A', 'B']:
         video_urls = EXERCISE_VIDEO_URLS_AB
         thumbnail_urls = EXERCISE_THUMBNAIL_URLS_AB
+        image_urls = EXERCISE_IMAGE_URLS_AB
     else:  # C または D
         video_urls = EXERCISE_VIDEO_URLS_CD
         thumbnail_urls = EXERCISE_THUMBNAIL_URLS_CD
+        image_urls = EXERCISE_IMAGE_URLS_CD
     
-    # 週番号に応じた動画を取得（インデックスは0始まりなのでcurrent_week - 1）
+    # 週番号に応じた動画・画像を取得（インデックスは0始まりなのでcurrent_week - 1）
     video_url = video_urls[current_week - 1]
     thumbnail_url = thumbnail_urls[current_week - 1]
+    image_url = image_urls[current_week - 1]
     
     # Flex Messageを生成
     flex_message = create_exercise_video_flex_message(video_url, thumbnail_url)
     
-    # メッセージと動画を送信
+    # メッセージ、動画、静止画を送信
     success = send_line_message(
         api, "reply", event.reply_token,
-        [TextMessage(text=response_message), flex_message],
+        [
+            TextMessage(text=response_message), 
+            flex_message,
+            ImageMessage(original_content_url=image_url, preview_image_url=image_url)
+        ],
         user, session, bot_id
     )
     if success:
