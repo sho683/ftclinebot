@@ -89,24 +89,98 @@ COMPANY3_ACCESS_TOKEN=あなたのAccess Token
 COMPANY3_NAME=企業B
 ```
 
-#### **オプションの環境変数**
+#### **重要：運動メニュー動画URL（24本）**
+
+⚠️ **設定しない場合はダミーURLが使われます**。本番運用前に必ず設定してください。
 
 ```bash
-# 動画URL（A/B評価用 - 12週分）
-EXERCISE_VIDEO_AB_WEEK1=https://www.youtube.com/watch?v=...
-EXERCISE_VIDEO_AB_WEEK2=https://www.youtube.com/watch?v=...
-...
-EXERCISE_VIDEO_AB_WEEK12=https://www.youtube.com/watch?v=...
+# A/B評価用 - 12週分
+EXERCISE_VIDEO_AB_WEEK1=https://www.youtube.com/watch?v=あなたの動画ID_1
+EXERCISE_VIDEO_AB_WEEK2=https://www.youtube.com/watch?v=あなたの動画ID_2
+EXERCISE_VIDEO_AB_WEEK3=https://www.youtube.com/watch?v=あなたの動画ID_3
+EXERCISE_VIDEO_AB_WEEK4=https://www.youtube.com/watch?v=あなたの動画ID_4
+EXERCISE_VIDEO_AB_WEEK5=https://www.youtube.com/watch?v=あなたの動画ID_5
+EXERCISE_VIDEO_AB_WEEK6=https://www.youtube.com/watch?v=あなたの動画ID_6
+EXERCISE_VIDEO_AB_WEEK7=https://www.youtube.com/watch?v=あなたの動画ID_7
+EXERCISE_VIDEO_AB_WEEK8=https://www.youtube.com/watch?v=あなたの動画ID_8
+EXERCISE_VIDEO_AB_WEEK9=https://www.youtube.com/watch?v=あなたの動画ID_9
+EXERCISE_VIDEO_AB_WEEK10=https://www.youtube.com/watch?v=あなたの動画ID_10
+EXERCISE_VIDEO_AB_WEEK11=https://www.youtube.com/watch?v=あなたの動画ID_11
+EXERCISE_VIDEO_AB_WEEK12=https://www.youtube.com/watch?v=あなたの動画ID_12
 
-# 動画URL（C/D評価用 - 12週分）
-EXERCISE_VIDEO_CD_WEEK1=https://www.youtube.com/watch?v=...
-EXERCISE_VIDEO_CD_WEEK2=https://www.youtube.com/watch?v=...
-...
-EXERCISE_VIDEO_CD_WEEK12=https://www.youtube.com/watch?v=...
+# C/D評価用 - 12週分
+EXERCISE_VIDEO_CD_WEEK1=https://www.youtube.com/watch?v=あなたの動画ID_1
+EXERCISE_VIDEO_CD_WEEK2=https://www.youtube.com/watch?v=あなたの動画ID_2
+EXERCISE_VIDEO_CD_WEEK3=https://www.youtube.com/watch?v=あなたの動画ID_3
+EXERCISE_VIDEO_CD_WEEK4=https://www.youtube.com/watch?v=あなたの動画ID_4
+EXERCISE_VIDEO_CD_WEEK5=https://www.youtube.com/watch?v=あなたの動画ID_5
+EXERCISE_VIDEO_CD_WEEK6=https://www.youtube.com/watch?v=あなたの動画ID_6
+EXERCISE_VIDEO_CD_WEEK7=https://www.youtube.com/watch?v=あなたの動画ID_7
+EXERCISE_VIDEO_CD_WEEK8=https://www.youtube.com/watch?v=あなたの動画ID_8
+EXERCISE_VIDEO_CD_WEEK9=https://www.youtube.com/watch?v=あなたの動画ID_9
+EXERCISE_VIDEO_CD_WEEK10=https://www.youtube.com/watch?v=あなたの動画ID_10
+EXERCISE_VIDEO_CD_WEEK11=https://www.youtube.com/watch?v=あなたの動画ID_11
+EXERCISE_VIDEO_CD_WEEK12=https://www.youtube.com/watch?v=あなたの動画ID_12
+```
 
-# サムネイル画像URL（オプション、設定しない場合はデフォルトURL）
-EXERCISE_THUMBNAIL_AB_WEEK1=https://...
-EXERCISE_THUMBNAIL_CD_WEEK1=https://...
+💡 **YouTube動画のアップロード推奨設定:**
+- 公開設定: **限定公開（Unlisted）**
+- URLを知っている人だけがアクセス可能
+- 検索結果には表示されない
+
+#### **重要：運動メニュー静止画URL（24本）**
+
+動画と合わせて送信する静止画（運動の説明図など）のURLを設定してください。
+
+```bash
+# A/B評価用 - 12週分
+EXERCISE_IMAGE_AB_WEEK1=https://your-server.com/image_AB_W1.jpg
+EXERCISE_IMAGE_AB_WEEK2=https://your-server.com/image_AB_W2.jpg
+EXERCISE_IMAGE_AB_WEEK3=https://your-server.com/image_AB_W3.jpg
+EXERCISE_IMAGE_AB_WEEK4=https://your-server.com/image_AB_W4.jpg
+EXERCISE_IMAGE_AB_WEEK5=https://your-server.com/image_AB_W5.jpg
+EXERCISE_IMAGE_AB_WEEK6=https://your-server.com/image_AB_W6.jpg
+EXERCISE_IMAGE_AB_WEEK7=https://your-server.com/image_AB_W7.jpg
+EXERCISE_IMAGE_AB_WEEK8=https://your-server.com/image_AB_W8.jpg
+EXERCISE_IMAGE_AB_WEEK9=https://your-server.com/image_AB_W9.jpg
+EXERCISE_IMAGE_AB_WEEK10=https://your-server.com/image_AB_W10.jpg
+EXERCISE_IMAGE_AB_WEEK11=https://your-server.com/image_AB_W11.jpg
+EXERCISE_IMAGE_AB_WEEK12=https://your-server.com/image_AB_W12.jpg
+
+# C/D評価用 - 12週分
+EXERCISE_IMAGE_CD_WEEK1=https://your-server.com/image_CD_W1.jpg
+EXERCISE_IMAGE_CD_WEEK2=https://your-server.com/image_CD_W2.jpg
+EXERCISE_IMAGE_CD_WEEK3=https://your-server.com/image_CD_W3.jpg
+EXERCISE_IMAGE_CD_WEEK4=https://your-server.com/image_CD_W4.jpg
+EXERCISE_IMAGE_CD_WEEK5=https://your-server.com/image_CD_W5.jpg
+EXERCISE_IMAGE_CD_WEEK6=https://your-server.com/image_CD_W6.jpg
+EXERCISE_IMAGE_CD_WEEK7=https://your-server.com/image_CD_W7.jpg
+EXERCISE_IMAGE_CD_WEEK8=https://your-server.com/image_CD_W8.jpg
+EXERCISE_IMAGE_CD_WEEK9=https://your-server.com/image_CD_W9.jpg
+EXERCISE_IMAGE_CD_WEEK10=https://your-server.com/image_CD_W10.jpg
+EXERCISE_IMAGE_CD_WEEK11=https://your-server.com/image_CD_W11.jpg
+EXERCISE_IMAGE_CD_WEEK12=https://your-server.com/image_CD_W12.jpg
+```
+
+💡 **静止画のホスティング:**
+- 自社サーバー、WordPress、Cloudflare、S3など
+- HTTPS必須
+- LINEから直接アクセスできるURL
+
+#### **オプション：サムネイル画像URL**
+
+設定しない場合はデフォルトのURLが使われます。
+
+```bash
+# A/B評価用サムネイル - 12週分
+EXERCISE_THUMBNAIL_AB_WEEK1=https://your-server.com/thumbnail_AB_W1.jpg
+EXERCISE_THUMBNAIL_AB_WEEK2=https://your-server.com/thumbnail_AB_W2.jpg
+# ... WEEK3〜12も同様
+
+# C/D評価用サムネイル - 12週分
+EXERCISE_THUMBNAIL_CD_WEEK1=https://your-server.com/thumbnail_CD_W1.jpg
+EXERCISE_THUMBNAIL_CD_WEEK2=https://your-server.com/thumbnail_CD_W2.jpg
+# ... WEEK3〜12も同様
 ```
 
 #### **複数企業を運用する場合**
