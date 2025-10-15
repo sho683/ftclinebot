@@ -115,6 +115,39 @@ EXERCISE_THUMBNAIL_URLS_CD = [
     os.getenv("EXERCISE_THUMBNAIL_CD_WEEK12", "https://jp-hc.com/wordpress/wp-content/uploads/2025/05/exercises_CD_W12.jpg"),
 ]
 
+# 運動メニュー静止画URL - 12週分×2セット（動画と合わせて送信）
+# A/B評価用
+EXERCISE_IMAGE_URLS_AB = [
+    os.getenv("EXERCISE_IMAGE_AB_WEEK1", "https://jp-hc.com/wordpress/wp-content/uploads/2025/05/image_AB_W1.jpg"),
+    os.getenv("EXERCISE_IMAGE_AB_WEEK2", "https://jp-hc.com/wordpress/wp-content/uploads/2025/05/image_AB_W2.jpg"),
+    os.getenv("EXERCISE_IMAGE_AB_WEEK3", "https://jp-hc.com/wordpress/wp-content/uploads/2025/05/image_AB_W3.jpg"),
+    os.getenv("EXERCISE_IMAGE_AB_WEEK4", "https://jp-hc.com/wordpress/wp-content/uploads/2025/05/image_AB_W4.jpg"),
+    os.getenv("EXERCISE_IMAGE_AB_WEEK5", "https://jp-hc.com/wordpress/wp-content/uploads/2025/05/image_AB_W5.jpg"),
+    os.getenv("EXERCISE_IMAGE_AB_WEEK6", "https://jp-hc.com/wordpress/wp-content/uploads/2025/05/image_AB_W6.jpg"),
+    os.getenv("EXERCISE_IMAGE_AB_WEEK7", "https://jp-hc.com/wordpress/wp-content/uploads/2025/05/image_AB_W7.jpg"),
+    os.getenv("EXERCISE_IMAGE_AB_WEEK8", "https://jp-hc.com/wordpress/wp-content/uploads/2025/05/image_AB_W8.jpg"),
+    os.getenv("EXERCISE_IMAGE_AB_WEEK9", "https://jp-hc.com/wordpress/wp-content/uploads/2025/05/image_AB_W9.jpg"),
+    os.getenv("EXERCISE_IMAGE_AB_WEEK10", "https://jp-hc.com/wordpress/wp-content/uploads/2025/05/image_AB_W10.jpg"),
+    os.getenv("EXERCISE_IMAGE_AB_WEEK11", "https://jp-hc.com/wordpress/wp-content/uploads/2025/05/image_AB_W11.jpg"),
+    os.getenv("EXERCISE_IMAGE_AB_WEEK12", "https://jp-hc.com/wordpress/wp-content/uploads/2025/05/image_AB_W12.jpg"),
+]
+
+# C/D評価用
+EXERCISE_IMAGE_URLS_CD = [
+    os.getenv("EXERCISE_IMAGE_CD_WEEK1", "https://jp-hc.com/wordpress/wp-content/uploads/2025/05/image_CD_W1.jpg"),
+    os.getenv("EXERCISE_IMAGE_CD_WEEK2", "https://jp-hc.com/wordpress/wp-content/uploads/2025/05/image_CD_W2.jpg"),
+    os.getenv("EXERCISE_IMAGE_CD_WEEK3", "https://jp-hc.com/wordpress/wp-content/uploads/2025/05/image_CD_W3.jpg"),
+    os.getenv("EXERCISE_IMAGE_CD_WEEK4", "https://jp-hc.com/wordpress/wp-content/uploads/2025/05/image_CD_W4.jpg"),
+    os.getenv("EXERCISE_IMAGE_CD_WEEK5", "https://jp-hc.com/wordpress/wp-content/uploads/2025/05/image_CD_W5.jpg"),
+    os.getenv("EXERCISE_IMAGE_CD_WEEK6", "https://jp-hc.com/wordpress/wp-content/uploads/2025/05/image_CD_W6.jpg"),
+    os.getenv("EXERCISE_IMAGE_CD_WEEK7", "https://jp-hc.com/wordpress/wp-content/uploads/2025/05/image_CD_W7.jpg"),
+    os.getenv("EXERCISE_IMAGE_CD_WEEK8", "https://jp-hc.com/wordpress/wp-content/uploads/2025/05/image_CD_W8.jpg"),
+    os.getenv("EXERCISE_IMAGE_CD_WEEK9", "https://jp-hc.com/wordpress/wp-content/uploads/2025/05/image_CD_W9.jpg"),
+    os.getenv("EXERCISE_IMAGE_CD_WEEK10", "https://jp-hc.com/wordpress/wp-content/uploads/2025/05/image_CD_W10.jpg"),
+    os.getenv("EXERCISE_IMAGE_CD_WEEK11", "https://jp-hc.com/wordpress/wp-content/uploads/2025/05/image_CD_W11.jpg"),
+    os.getenv("EXERCISE_IMAGE_CD_WEEK12", "https://jp-hc.com/wordpress/wp-content/uploads/2025/05/image_CD_W12.jpg"),
+]
+
 # LINE APIクライアントとハンドラーを取得する関数
 def get_line_client(bot_id):
     """指定されたBOT IDのLINE MessagingAPIクライアントを取得"""
