@@ -88,6 +88,68 @@ def test_scheduler():
         }), 500
 
 # テスト用エンドポイント：条件なしで全ユーザーに送信
+@app.route("/test/send-to-user/<bot_id>/<user_id>", methods=['GET'])
+def test_send_to_user(bot_id, user_id):
+    """特定のユーザーにリマインダーを送信（テスト専用）"""
+    from flask import jsonify
+    from db_models import get_db_session, User, Company
+    from config import get_line_client
+    from linebot.v3.messaging import TextMessage, QuickReply, QuickReplyItem, MessageAction
+    from utils import send_line_message
+    
+    if bot_id not in BOT_CONFIGS:
+        return jsonify({"error": "Invalid bot_id"}), 404
+    
+    try:
+        api = get_line_client(bot_id)
+        
+        with get_db_session(DATABASE_URL) as session:
+            company = session.query(Company).filter_by(bot_id=bot_id).first()
+            if not company:
+                return jsonify({"error": "Company not found"}), 404
+            
+            # 特定のユーザーを取得
+            user = session.query(User).filter_by(
+                line_user_id=user_id,
+                company_id=company.id
+            ).first()
+            
+            if not user:
+                return jsonify({"error": "User not found"}), 404
+            
+            quick_reply = QuickReply(
+                items=[
+                    QuickReplyItem(action=MessageAction(label="0回", text="0回")),
+                    QuickReplyItem(action=MessageAction(label="1~3回", text="1~3回")),
+                    QuickReplyItem(action=MessageAction(label="4~7回", text="4~7回"))
+                ]
+            )
+            
+            message_text = f"{user.username}さん、{company.name}の足健康プログラムからお知らせです。この1週間で運動は何回できましたか？0〜7回でご回答ください。"
+            message = TextMessage(text=message_text, quick_reply=quick_reply)
+            
+            success = send_line_message(api, "push", user.line_user_id, [message], user, session, bot_id)
+            
+            if success:
+                user.question_sent = True
+                session.commit()
+                return jsonify({
+                    "status": "success",
+                    "message": f"送信成功: {user.line_user_id}",
+                    "user": user.username
+                })
+            else:
+                return jsonify({
+                    "status": "error",
+                    "message": f"送信失敗: {user.line_user_id}"
+                }), 500
+    
+    except Exception as e:
+        return jsonify({
+            "status": "error",
+            "message": str(e)
+        }), 500
+
 @app.route("/test/send-now", methods=['GET'])
 def test_send_now():
     """条件なしで全ユーザーにリマインダーを送信（テスト専用）"""
