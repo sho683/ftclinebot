@@ -300,13 +300,12 @@ def process_exercise_days(event, text, user, company, api, session, bot_id):
     # Flex Messageを生成
     flex_message = create_exercise_video_flex_message(video_url, thumbnail_url)
     
-    # メッセージ、動画、静止画を送信
+    # メッセージ、動画のみを送信（静止画は一時的に無効化）
     success = send_line_message(
         api, "reply", event.reply_token,
         [
             TextMessage(text=response_message), 
-            flex_message,
-            ImageMessage(original_content_url=image_url, preview_image_url=image_url)
+            flex_message
         ],
         user, session, bot_id
     )
