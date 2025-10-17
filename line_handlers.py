@@ -291,6 +291,12 @@ def process_exercise_days(event, text, user, company, api, session, bot_id):
     thumbnail_url = thumbnail_urls[current_week - 1]
     image_url = image_urls[current_week - 1]
     
+    # デバッグ用ログ
+    print(f"使用するURL - 動画: {video_url}")
+    print(f"使用するURL - サムネイル: {thumbnail_url}")
+    print(f"使用するURL - 静止画: {image_url}")
+    print(f"静止画URLがHTTPSか: {image_url.startswith('https://')}")
+    
     # Flex Messageを生成
     flex_message = create_exercise_video_flex_message(video_url, thumbnail_url)
     
